@@ -55,15 +55,17 @@ importData <- function(){
     features <- fread(files[4]) # read in features.txt for the headers
     features$V1 <- NULL # drop the first column
     features <- rbind(c("subject","activity"), features) # add the first 2 col names
-    features <- gsub("\\(|\\)", "", features[,V2]) # clean up the headers
-    features <- gsub(",|-| - ", "_", features) # clean up the headers
+    #features <- gsub("\\(|\\)", "", features[,V2]) # clean up the headers
+    features <- gsub("-", "_", features[,V2]) # clean up the headers
     
     # Create the new Data Table    
     data <- data.table(subject = subject, activity = y, X) # create the data.table
     setnames(data, colnames(data), features) # set the column names
     
     # Drop the columns we don't want
-    meanstd <- grepl("_mean|_std", colnames(data)) # Find occurances of mean and std
+    mean <- grepl("_mean()", colnames(data), fixed=TRUE) # Find occurances of mean
+    std <- grepl("_std()", colnames(data), fixed=TRUE) # Find occurances of std
+    meanstd <- (mean | std) # OR the two together 
     meanstd[1] <- TRUE # Make sure we don't drop the first column
     meanstd[2] <- TRUE # Make sure we don't drop the second column
     data <- data[,meanstd, with=FALSE] # Subset data for just the mean and std columns
